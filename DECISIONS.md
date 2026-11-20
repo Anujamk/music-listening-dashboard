@@ -22,3 +22,21 @@
 
 **Final cleaned columns:** `spotify_track_uri`, `ts`, `ms_played`, `track_name`, `artist_name`, `album_name`, `is_real_play`
 15. **Commit the exploration notebook (outputs cleared).** It shows the evidence behind the cleaning decisions.
+16. **Drop duplicates before dropping columns.** Stricter rule: rows must match on every original field, so rows that differ only in dropped columns aren't wrongly deleted.
+17. **Drop rows whose timestamp fails to parse.** Every planned chart is time-based; a play with no time can't be placed. Count is logged.
+## Cleaning results (Maven dataset)
+- Raw rows: 149,860
+- Duplicates dropped: 1,185
+- Unparseable timestamps dropped: 0
+- Final rows: 148,675
+- Real plays (≥30s): 93324
+19. **When the same track has multiple rows at the same ts (differing only in ms_played), keep the longest.** All started at the same moment, so the longest contains the others. Required for the UNIQUE (spotify_track_uri, ts) constraint.
+## Cleaning results (Maven dataset)
+- Raw rows: 149,860
+- Duplicates dropped: 1,185
+- Unparseable timestamps dropped: 0
+- Final rows: 148,675
+- Real plays (≥30s): 93324
+- Same-start duplicates dropped: 325
+- Final rows: 148,350
+- Also update the real-plays count, since it may have changed.

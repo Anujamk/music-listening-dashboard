@@ -38,6 +38,18 @@ def drop_duplicate_rows(df):
     return df
 
 
+def drop_same_start_duplicates(df):
+    """drops duplicates with same ts, spotify_track_uri and keeps the longest ms_played"""
+    len_before = len(df)
+    df = df.sort_values(by="ms_played", ascending=False)
+    df = df.drop_duplicates(subset=["ts", "spotify_track_uri"])
+    len_after = len(df)
+    duplicate_dropped = len_before - len_after
+    print("Duplicate rows with same start: ", duplicate_dropped)
+    df = df.sort_values(by="ts", ascending=True)
+    return df
+
+
 def add_is_real_play(df):
     """add column is_real_play, true if ms_played >= 30000"""
     df["is_real_play"] = df["ms_played"] >= 30000
@@ -50,11 +62,13 @@ def save_csv(df, path):
     return
 
 
+
 def main():
     df = load_csv(RAW_PATH)
     df = drop_duplicate_rows(df)
     df = keep_columns(df)
     df = parse_timestamps(df)
+    df = drop_same_start_duplicates(df)
     df = add_is_real_play(df)
     save_csv(df, CLEAN_PATH)
 
