@@ -22,6 +22,19 @@ def parse_timestamps(df):
     return df
 
 
+def use_latest_track_metadata(df):
+    """changes the old track name to the new track name to keep consistency"""
+    df = df.sort_values(by="ts", ascending=True)
+    old_track_names = df["track_name"]
+    old_album_names = df["album_name"]
+    latest = df.groupby("spotify_track_uri").last()
+    df["track_name"] = df["spotify_track_uri"].map(latest["track_name"])
+    df["album_name"] = df["spotify_track_uri"].map(latest["album_name"])
+    changed = (old_track_names != df["track_name"]) | (old_album_names != df["album_name"])
+    changed_uris = df.loc[changed, "spotify_track_uri"].nunique()   
+    print("changed track and album names: ", changed_uris)
+    return df
+
 def keep_columns(df):
     """keeps columns: spotify_track_uri, ts, ms_played, track_name, artist_name, album_name"""
     df = df[KEEP_COLUMNS]
@@ -68,6 +81,7 @@ def main():
     df = drop_duplicate_rows(df)
     df = keep_columns(df)
     df = parse_timestamps(df)
+    df = use_latest_track_metadata(df)
     df = drop_same_start_duplicates(df)
     df = add_is_real_play(df)
     save_csv(df, CLEAN_PATH)

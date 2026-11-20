@@ -40,3 +40,4 @@
 - Same-start duplicates dropped: 325
 - Final rows: 148,350
 - Also update the real-plays count, since it may have changed.
+20. **When a track URI appears with different names/albums (remasters, new editions), use the most recent.** Same song, updated metadata; latest matches what Spotify shows now. Affects 70 URIs (1,710 plays).
