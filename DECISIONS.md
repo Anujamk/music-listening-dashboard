@@ -41,3 +41,11 @@
 - Final rows: 148,350
 - Also update the real-plays count, since it may have changed.
 20. **When a track URI appears with different names/albums (remasters, new editions), use the most recent.** Same song, updated metadata; latest matches what Spotify shows now. Affects 70 URIs (1,710 plays).
+## Schema
+21. **Three tables: `artists`, `tracks`, `plays`.** Each fact is stored once and linked by keys (normalization), so an artist name isn't repeated across ~148k plays and can't drift into inconsistent versions.
+22. **`album_name` is a column in `tracks`, not its own table.** No planned feature uses albums; a separate table would add an extra JOIN and dedup step for no benefit.
+23. **Assumption: one artist per track.** The data only provides the primary artist (features are part of the track name). Albums are grouped by name + artist when needed, so same-named albums from different artists don't merge.
+24. **`plays` references `tracks`, not `artists`.** The artist is a fact about the track; storing it on plays too would duplicate it and allow contradictions.
+25. **`UNIQUE (spotify_track_uri, ts)` on `plays`.** The same track can't start twice at the same moment; this makes ingestion idempotent with `ON CONFLICT DO NOTHING` (re-running doesn't duplicate rows).
+26. **`GENERATED ALWAYS AS IDENTITY` instead of `SERIAL` for generated IDs.** It's the SQL-standard way, and it stops IDs from being set by accident on insert.
+27. **`schema.sql` drops tables in reverse order of creation.** A table can't be dropped while another table's foreign key still points to it, so dependent tables go first.
